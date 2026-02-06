@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
@@ -48,6 +49,7 @@ const defaultFilters: Filters = {
 };
 
 export default function CollectionsPage() {
+  const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>(mockCollections);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
@@ -107,7 +109,7 @@ export default function CollectionsPage() {
               Создавайте и управляйте подборками товаров
             </p>
           </div>
-          <Button className="gap-2 self-start sm:self-auto">
+          <Button className="gap-2 self-start sm:self-auto" onClick={() => navigate("/collections/new")}>
             <Plus className="h-4 w-4" />
             Создать подборку
           </Button>
@@ -176,7 +178,7 @@ export default function CollectionsPage() {
                 <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
                   Создайте первую подборку для организации товаров
                 </p>
-                <Button className="gap-2">
+                <Button className="gap-2" onClick={() => navigate("/collections/new")}>
                   <Plus className="h-4 w-4" />
                   Создать подборку
                 </Button>
@@ -282,7 +284,7 @@ export default function CollectionsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44 bg-popover z-50">
-                        <DropdownMenuItem className="gap-2">
+                        <DropdownMenuItem className="gap-2" onClick={() => navigate(`/collections/${col.id}/edit`)}>
                           <Pencil className="h-4 w-4" />
                           Редактировать
                         </DropdownMenuItem>
