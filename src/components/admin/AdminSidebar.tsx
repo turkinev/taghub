@@ -7,6 +7,7 @@ import {
   Settings,
   ChevronLeft,
   Package,
+  Link,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const navItems = [
   { title: "Товары", href: "/products", icon: Package },
   { title: "Подборки", href: "/collections", icon: ShoppingBag },
   { title: "Теги", href: "/tags", icon: Tags },
+  { title: "Назначение тегов", href: "/tag-assignment", icon: Link },
   { title: "Пользователи", href: "/users", icon: Users },
   { title: "Настройки", href: "/settings", icon: Settings },
 ];
