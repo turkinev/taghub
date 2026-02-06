@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import TagsPage from "./pages/TagsPage";
 import TagAssignmentPage from "./pages/TagAssignmentPage";
 import CollectionsPage from "./pages/CollectionsPage";
+import CollectionEditorPage from "./pages/CollectionEditorPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,8 @@ const App = () => (
           <Route path="/tags" element={<TagsPage />} />
           <Route path="/tag-assignment" element={<TagAssignmentPage />} />
           <Route path="/collections" element={<CollectionsPage />} />
+          <Route path="/collections/new" element={<CollectionEditorPage />} />
+          <Route path="/collections/:id/edit" element={<CollectionEditorPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
