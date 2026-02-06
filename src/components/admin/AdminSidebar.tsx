@@ -1,12 +1,8 @@
 import { NavLink as RouterNavLink, useLocation } from "react-router-dom";
 import {
   Tags,
-  LayoutDashboard,
   ShoppingBag,
-  Users,
-  Settings,
   ChevronLeft,
-  Package,
   Link,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,13 +13,9 @@ interface AdminSidebarProps {
 }
 
 const navItems = [
-  { title: "Дашборд", href: "/", icon: LayoutDashboard },
-  { title: "Товары", href: "/products", icon: Package },
   { title: "Подборки", href: "/collections", icon: ShoppingBag },
   { title: "Теги", href: "/tags", icon: Tags },
   { title: "Назначение тегов", href: "/tag-assignment", icon: Link },
-  { title: "Пользователи", href: "/users", icon: Users },
-  { title: "Настройки", href: "/settings", icon: Settings },
 ];
 
 export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
