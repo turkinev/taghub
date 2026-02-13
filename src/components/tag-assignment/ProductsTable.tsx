@@ -57,16 +57,11 @@ export function ProductsTable({
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(price);
 
-  const showType = mode === "marketer";
   const showSeller = mode === "seller";
   
-  // marketer: checkbox, name, price, tags-col1, tags-col2, type
-  // seller: checkbox, name, seller, price, tags-col1, tags-col2
-  const gridTemplate = showType
-    ? "40px 1fr 100px 130px 1fr 70px"
-    : showSeller
-      ? "40px 1fr 100px 100px 130px 1fr"
-      : "40px 1fr 100px 130px 1fr";
+  const gridTemplate = showSeller
+    ? "40px 1fr 100px 100px 130px 1fr"
+    : "40px 1fr 100px 130px 1fr";
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
@@ -90,7 +85,7 @@ export function ProductsTable({
           <span>Цена</span>
           <span>Теги</span>
           <span />
-          {showType && <span>Тип</span>}
+          
         </div>
       </div>
 
@@ -154,21 +149,6 @@ export function ProductsTable({
               )}
             </div>
 
-            {/* Type - marketer only */}
-            {showType && (
-              <div>
-                <span
-                  className={cn(
-                    "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                    product.type === "SPU"
-                      ? "bg-badge-global/15 text-badge-global"
-                      : "bg-accent text-muted-foreground"
-                  )}
-                >
-                  {product.type}
-                </span>
-              </div>
-            )}
           </div>
         );
       })}
