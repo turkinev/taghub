@@ -35,8 +35,7 @@ export interface ProductFiltersState {
   seller: string;
   priceMin: string;
   priceMax: string;
-  ratingMin: string;
-  ratingMax: string;
+  rating: string[];
   productIdSearch: string;
   template: string;
   tag: string;
@@ -254,18 +253,13 @@ export function ProductFilters({ filters, onChange, onApply, mode }: ProductFilt
           />
         </div>
 
-        {/* Rating */}
-        <Select value={filters.ratingMin || "all"} onValueChange={(v) => update("ratingMin", v === "all" ? "" : v)}>
-          <SelectTrigger className="w-[130px] h-9 bg-card">
-            <SelectValue placeholder="Рейтинг" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Любой рейтинг</SelectItem>
-            {["-1", "0", "1", "2", "3"].map((r) => (
-              <SelectItem key={r} value={r}>{r}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Rating multi-select */}
+        <MultiSelectFilter
+          label="Рейтинг"
+          options={["-1", "0", "1", "2", "3"]}
+          selected={filters.rating || []}
+          onChange={(val) => onChange({ ...filters, rating: val })}
+        />
 
         {/* Apply button */}
         <Button size="sm" className="h-9 px-5" onClick={onApply}>
