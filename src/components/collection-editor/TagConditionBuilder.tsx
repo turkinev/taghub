@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -28,7 +30,7 @@ export interface TagConditions {
   logic: GroupLogic;
   priceMin: string;
   priceMax: string;
-  rating: string;
+  rating: string[];
   template: string;
   sort: string;
 }
@@ -203,20 +205,37 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
         </div>
         <div className="space-y-1">
           <Label className="text-xs font-semibold">Рейтинг</Label>
-          <Select
-            value={conditions.rating}
-            onValueChange={(v) => onChange({ ...conditions, rating: v })}
-          >
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="Любой" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Любой</SelectItem>
-              {["-1", "0", "1", "2", "3"].map((r) => (
-                <SelectItem key={r} value={r}>{r}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="h-8 w-full justify-between text-sm font-normal">
+                <span className="truncate">
+                  {conditions.rating.length === 0
+                    ? "Любой"
+                    : conditions.rating.join(", ")}
+                </span>
+                <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-36 p-2 space-y-1" align="start">
+              {["-1", "0", "1", "2", "3"].map((r) => {
+                const checked = conditions.rating.includes(r);
+                return (
+                  <label key={r} className="flex items-center gap-2 cursor-pointer rounded px-2 py-1 hover:bg-accent text-sm">
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => {
+                        const next = checked
+                          ? conditions.rating.filter((v) => v !== r)
+                          : [...conditions.rating, r];
+                        onChange({ ...conditions, rating: next });
+                      }}
+                    />
+                    {r}
+                  </label>
+                );
+              })}
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="space-y-1">
           <Label className="text-xs font-semibold">Шаблон</Label>
