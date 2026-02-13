@@ -48,7 +48,7 @@ export default function TagAssignmentPage() {
       result = result.filter((p) => p.productId.toLowerCase().includes(q));
     }
 
-    if (filters.categories.length > 0) {
+    if (filters.categories && filters.categories.length > 0) {
       result = result.filter((p) => filters.categories.includes(p.category));
     }
 
