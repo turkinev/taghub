@@ -269,30 +269,18 @@ export function ProductFilters({ filters, onChange, onApply, mode }: ProductFilt
           />
         </div>
 
-        {/* Rating range */}
-        <div className="flex items-center gap-1.5">
-          <Input
-            type="number"
-            placeholder="Рейтинг от"
-            value={filters.ratingMin}
-            onChange={(e) => update("ratingMin", e.target.value)}
-            className="w-[110px] h-9 bg-card"
-            min="0"
-            max="5"
-            step="0.1"
-          />
-          <span className="text-muted-foreground text-xs">—</span>
-          <Input
-            type="number"
-            placeholder="до"
-            value={filters.ratingMax}
-            onChange={(e) => update("ratingMax", e.target.value)}
-            className="w-[80px] h-9 bg-card"
-            min="0"
-            max="5"
-            step="0.1"
-          />
-        </div>
+        {/* Rating */}
+        <Select value={filters.ratingMin || "all"} onValueChange={(v) => update("ratingMin", v === "all" ? "" : v)}>
+          <SelectTrigger className="w-[130px] h-9 bg-card">
+            <SelectValue placeholder="Рейтинг" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Любой рейтинг</SelectItem>
+            {["-1", "0", "1", "2", "3"].map((r) => (
+              <SelectItem key={r} value={r}>{r}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Apply button */}
         <Button size="sm" className="h-9 px-5" onClick={onApply}>
