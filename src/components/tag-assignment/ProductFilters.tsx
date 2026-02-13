@@ -222,8 +222,8 @@ export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps)
           onChange={handleCategoriesChange}
         />
 
-        {/* Subcategories multi-select — only when categories are selected and in seller mode */}
-        {mode === "seller" && availableSubcategories.length > 0 && (
+        {/* Subcategories multi-select — only when categories are selected */}
+        {availableSubcategories.length > 0 && (
           <MultiSelectFilter
             label="Подкатегория"
             options={availableSubcategories}
