@@ -213,9 +213,7 @@ export default function TagAssignmentPage() {
               <h1 className="text-2xl font-bold tracking-tight text-foreground">Назначение тегов</h1>
               <p className="text-sm text-muted-foreground">
                 Назначайте теги товарам вручную или массово
-                {mode === "seller" && (
-                  <span className="ml-1 font-semibold text-destructive"> — не более 5 000 товаров</span>
-                )}
+                <span className="ml-1 font-semibold text-destructive"> — не более 5 000 товаров</span>
               </p>
             </div>
             {/* Mode switcher */}

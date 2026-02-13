@@ -57,11 +57,7 @@ export function ProductsTable({
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(price);
 
-  const showSeller = mode === "seller";
-  
-  const gridTemplate = showSeller
-    ? "40px 1fr 100px 100px 130px 1fr"
-    : "40px 1fr 100px 130px 1fr";
+  const gridTemplate = "40px 1fr 100px 130px 1fr";
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
@@ -81,7 +77,7 @@ export function ProductsTable({
             />
           </div>
           <span>Товар</span>
-          {showSeller && <span>Продавец</span>}
+          
           <span>Цена</span>
           <span>Теги</span>
           <span />
@@ -123,10 +119,6 @@ export function ProductsTable({
               </p>
             </div>
 
-            {/* Seller */}
-            {showSeller && (
-              <div className="text-xs text-muted-foreground truncate">{product.seller}</div>
-            )}
 
             {/* Price */}
             <div className="text-sm font-medium tabular-nums">{formatPrice(product.price)}</div>
