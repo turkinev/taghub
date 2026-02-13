@@ -31,6 +31,8 @@ const defaultConditions: TagConditions = {
   logic: "AND",
   priceMin: "",
   priceMax: "",
+  rating: "all",
+  template: "",
   sort: "popularity",
 };
 
