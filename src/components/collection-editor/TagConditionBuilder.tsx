@@ -42,7 +42,11 @@ interface TagConditionBuilderProps {
 
 const activeTags = mockTags.filter((t) => t.status === "active");
 
-export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilderProps) {
+export function TagConditionBuilder({ conditions: rawConditions, onChange }: TagConditionBuilderProps) {
+  const conditions = {
+    ...rawConditions,
+    rating: Array.isArray(rawConditions.rating) ? rawConditions.rating : [],
+  };
   const addGroup = () => {
     const newGroup: ConditionGroup = {
       id: `g-${Date.now()}`,
