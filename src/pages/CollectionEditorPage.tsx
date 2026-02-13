@@ -14,12 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ManualProductPicker } from "@/components/collection-editor/ManualProductPicker";
+import { FileUploadArea } from "@/components/collection-editor/FileUploadArea";
 import {
   TagConditionBuilder,
   TagConditions,
 } from "@/components/collection-editor/TagConditionBuilder";
-import { ProductPreviewList } from "@/components/collection-editor/ProductPreviewList";
 import { mockProducts, Product } from "@/data/mockProducts";
 import { mockTags } from "@/data/mockTags";
 import { toast } from "sonner";
@@ -61,6 +60,7 @@ export default function CollectionEditorPage() {
   const [description, setDescription] = useState("");
   
   const [mode, setMode] = useState<CollectionMode>("manual");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   // Manual mode
   const [manualProducts, setManualProducts] = useState<Product[]>([]);
@@ -195,104 +195,86 @@ export default function CollectionEditorPage() {
           </div>
         </div>
 
-        {/* Two-column layout */}
-        <div className="grid grid-cols-[1fr_380px] gap-6 items-start">
-          {/* Left column — settings */}
-          <div className="space-y-6">
-            {/* Basic info card */}
-            <div className="rounded-lg border bg-card p-4 space-y-4">
-              <h2 className="text-sm font-semibold">Основная информация</h2>
+        {/* Single column layout */}
+        <div className="space-y-6 max-w-2xl">
+          {/* Basic info card */}
+          <div className="rounded-lg border bg-card p-4 space-y-4">
+            <h2 className="text-sm font-semibold">Основная информация</h2>
 
-              <div className="space-y-2">
-                <Label htmlFor="col-name">Название</Label>
-                <Input
-                  id="col-name"
-                  value={name}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="Название подборки"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="col-slug">URL / slug</Label>
-                <Input
-                  id="col-slug"
-                  value={slug}
-                  onChange={(e) => handleSlugChange(e.target.value)}
-                  placeholder="url-slug"
-                  className="font-mono text-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="col-desc">Описание</Label>
-                <Textarea
-                  id="col-desc"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Описание подборки"
-                  rows={2}
-                />
-              </div>
-
-            </div>
-
-            {/* Collection mode */}
-            <div className="rounded-lg border bg-card p-4 space-y-4">
-              <h2 className="text-sm font-semibold">Тип подборки</h2>
-
-              <Tabs
-                value={mode}
-                onValueChange={(v) => setMode(v as CollectionMode)}
-              >
-                <TabsList className="grid grid-cols-2 w-full">
-                  <TabsTrigger value="manual">Ручная</TabsTrigger>
-                  <TabsTrigger value="by_tags">По тегам</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="manual" className="mt-4">
-                  <div className="h-[400px]">
-                    <ManualProductPicker
-                      selectedProducts={manualProducts}
-                      onAdd={addManualProduct}
-                      onRemove={removeManualProduct}
-                      onReorder={reorderManualProducts}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="by_tags" className="mt-4">
-                  <TagConditionBuilder
-                    conditions={conditions}
-                    onChange={setConditions}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-
-          {/* Right column — preview */}
-          <div className="sticky top-20 space-y-4">
-            <div className="rounded-lg border bg-card p-4">
-              <ProductPreviewList
-                products={previewProducts}
-                totalCount={previewProducts.length}
+            <div className="space-y-2">
+              <Label htmlFor="col-name">Название</Label>
+              <Input
+                id="col-name"
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="Название подборки"
               />
             </div>
 
-            {/* Action buttons */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate("/collections")}
-              >
-                Отмена
-              </Button>
-              <Button className="flex-1" onClick={handleSave}>
-                Сохранить
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="col-slug">URL / slug</Label>
+              <Input
+                id="col-slug"
+                value={slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="url-slug"
+                className="font-mono text-sm"
+              />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="col-desc">Описание</Label>
+              <Textarea
+                id="col-desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Описание подборки"
+                rows={2}
+              />
+            </div>
+          </div>
+
+          {/* Collection mode */}
+          <div className="rounded-lg border bg-card p-4 space-y-4">
+            <h2 className="text-sm font-semibold">Тип подборки</h2>
+
+            <Tabs
+              value={mode}
+              onValueChange={(v) => setMode(v as CollectionMode)}
+            >
+              <TabsList className="grid grid-cols-2 w-full">
+                <TabsTrigger value="manual">Ручная</TabsTrigger>
+                <TabsTrigger value="by_tags">По тегам</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="manual" className="mt-4">
+                <FileUploadArea
+                  file={uploadedFile}
+                  onFileChange={setUploadedFile}
+                />
+              </TabsContent>
+
+              <TabsContent value="by_tags" className="mt-4">
+                <TagConditionBuilder
+                  conditions={conditions}
+                  onChange={setConditions}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => navigate("/collections")}
+            >
+              Отмена
+            </Button>
+            <Button className="flex-1" onClick={handleSave}>
+              Сохранить
+            </Button>
           </div>
         </div>
       </div>

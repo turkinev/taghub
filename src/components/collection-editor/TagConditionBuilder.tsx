@@ -101,8 +101,8 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AND">AND</SelectItem>
-                  <SelectItem value="OR">OR</SelectItem>
+                  <SelectItem value="AND">И</SelectItem>
+                  <SelectItem value="OR">ИЛИ</SelectItem>
                 </SelectContent>
               </Select>
               <div className="h-px flex-1 bg-border" />
@@ -121,8 +121,8 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="MUST">MUST (все)</SelectItem>
-                    <SelectItem value="ANY">ANY (любой)</SelectItem>
+                    <SelectItem value="MUST">И (все)</SelectItem>
+                    <SelectItem value="ANY">ИЛИ (любой)</SelectItem>
                   </SelectContent>
                 </Select>
                 <span className="text-xs text-muted-foreground">
