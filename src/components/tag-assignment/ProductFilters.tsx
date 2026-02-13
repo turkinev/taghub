@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, ChevronDown, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -7,6 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { mockCategories, mockCategoryTree, mockTags } from "@/data/mockTags";
 
 const mockSellers = [
@@ -25,8 +29,8 @@ const mockTemplates = [
 
 export interface ProductFiltersState {
   search: string;
-  category: string;
-  subcategory: string;
+  categories: string[];
+  subcategories: string[];
   seller: string;
   priceMin: string;
   priceMax: string;
@@ -41,20 +45,119 @@ interface ProductFiltersProps {
   mode: "marketer" | "seller";
 }
 
+function MultiSelectFilter({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (val: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+  }, [open]);
+
+  const filtered = search
+    ? options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
+    : options;
+
+  const toggle = (val: string) => {
+    onChange(
+      selected.includes(val) ? selected.filter((s) => s !== val) : [...selected, val]
+    );
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className="flex items-center gap-1 h-9 px-3 rounded-md border bg-card text-sm min-w-[150px] max-w-[220px] hover:bg-accent/50 transition-colors">
+          <span className="truncate text-left flex-1">
+            {selected.length === 0 ? (
+              <span className="text-muted-foreground">{label}</span>
+            ) : (
+              <span className="flex items-center gap-1">
+                {label}
+                <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-medium">
+                  {selected.length}
+                </Badge>
+              </span>
+            )}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[220px] p-0" align="start">
+        <div className="p-2 border-b">
+          <Input
+            ref={inputRef}
+            placeholder="Поиск..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="max-h-[200px] overflow-y-auto p-1">
+          {filtered.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-3">Ничего не найдено</p>
+          )}
+          {filtered.map((option) => (
+            <label
+              key={option}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-accent cursor-pointer text-sm"
+            >
+              <Checkbox
+                checked={selected.includes(option)}
+                onCheckedChange={() => toggle(option)}
+              />
+              <span className="truncate">{option}</span>
+            </label>
+          ))}
+        </div>
+        {selected.length > 0 && (
+          <div className="border-t p-1.5">
+            <button
+              className="text-xs text-muted-foreground hover:text-foreground w-full text-center"
+              onClick={() => onChange([])}
+            >
+              Сбросить
+            </button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps) {
   const update = (key: keyof ProductFiltersState, value: string) => {
-    const next = { ...filters, [key]: value };
-    // Reset subcategory when category changes
-    if (key === "category") {
-      next.subcategory = "all";
-    }
-    onChange(next);
+    onChange({ ...filters, [key]: value });
   };
 
   const activeTags = mockTags.filter((t) => t.status === "active");
-  const selectedCategoryTree = filters.category !== "all"
-    ? mockCategoryTree.find((c) => c.name === filters.category)
-    : null;
+
+  // Collect available subcategories based on selected categories
+  const availableSubcategories = filters.categories.length > 0
+    ? mockCategoryTree
+        .filter((c) => filters.categories.includes(c.name))
+        .flatMap((c) => c.subcategories)
+    : [];
+
+  const handleCategoriesChange = (cats: string[]) => {
+    // Remove subcategories that no longer belong to selected categories
+    const validSubs = cats.length > 0
+      ? filters.subcategories.filter((sub) =>
+          mockCategoryTree.some((c) => cats.includes(c.name) && c.subcategories.includes(sub))
+        )
+      : [];
+    onChange({ ...filters, categories: cats, subcategories: validSubs });
+  };
 
   return (
     <div className="sticky top-14 z-20 -mx-4 bg-background/95 backdrop-blur-sm border-b px-4 py-3 lg:-mx-6 lg:px-6">
@@ -111,32 +214,22 @@ export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps)
           </>
         )}
 
-        {/* Category */}
-        <Select value={filters.category} onValueChange={(v) => update("category", v)}>
-          <SelectTrigger className="w-[150px] h-9 bg-card">
-            <SelectValue placeholder="Категория" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все категории</SelectItem>
-            {mockCategories.map((cat) => (
-              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Categories multi-select */}
+        <MultiSelectFilter
+          label="Категория"
+          options={mockCategories}
+          selected={filters.categories}
+          onChange={handleCategoriesChange}
+        />
 
-        {/* Subcategory - only when a category is selected and in seller mode */}
-        {mode === "seller" && selectedCategoryTree && (
-          <Select value={filters.subcategory} onValueChange={(v) => update("subcategory", v)}>
-            <SelectTrigger className="w-[160px] h-9 bg-card">
-              <SelectValue placeholder="Подкатегория" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все подкатегории</SelectItem>
-              {selectedCategoryTree.subcategories.map((sub) => (
-                <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        {/* Subcategories multi-select — only when categories are selected and in seller mode */}
+        {mode === "seller" && availableSubcategories.length > 0 && (
+          <MultiSelectFilter
+            label="Подкатегория"
+            options={availableSubcategories}
+            selected={filters.subcategories}
+            onChange={(subs) => onChange({ ...filters, subcategories: subs })}
+          />
         )}
 
         {/* Seller - marketer only */}
