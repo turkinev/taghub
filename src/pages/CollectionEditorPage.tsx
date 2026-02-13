@@ -196,7 +196,7 @@ export default function CollectionEditorPage() {
         </div>
 
         {/* Single column layout */}
-        <div className="space-y-6 max-w-2xl">
+        <div className="space-y-6">
           {/* Basic info card */}
           <div className="rounded-lg border bg-card p-4 space-y-4">
             <h2 className="text-sm font-semibold">Основная информация</h2>
