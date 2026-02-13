@@ -7,8 +7,6 @@ import {
   Search,
   MoreHorizontal,
   Pencil,
-  Archive,
-  ArchiveRestore,
   ShoppingBag,
   Hand,
   Tags,
@@ -27,30 +25,24 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { mockCollections, Collection } from "@/data/mockCollections";
-import { toast } from "sonner";
 
 interface Filters {
   search: string;
   type: string;
-  visibility: string;
-  status: string;
 }
 
 const defaultFilters: Filters = {
   search: "",
   type: "all",
-  visibility: "all",
-  status: "active",
 };
 
 export default function CollectionsPage() {
   const navigate = useNavigate();
-  const [collections, setCollections] = useState<Collection[]>(mockCollections);
+  const [collections] = useState<Collection[]>(mockCollections);
   const [filters, setFilters] = useState<Filters>(defaultFilters);
 
   const update = (key: keyof Filters, value: string) =>
@@ -66,35 +58,9 @@ export default function CollectionsPage() {
     if (filters.type !== "all") {
       result = result.filter((c) => c.type === filters.type);
     }
-    if (filters.visibility !== "all") {
-      result = result.filter((c) => c.visibility === filters.visibility);
-    }
-    if (filters.status !== "all") {
-      result = result.filter((c) => c.status === filters.status);
-    }
 
     return result;
   }, [collections, filters]);
-
-  const handleToggleArchive = (col: Collection) => {
-    setCollections((prev) =>
-      prev.map((c) =>
-        c.id === col.id
-          ? {
-              ...c,
-              status: c.status === "archived" ? "active" : "archived",
-              updatedAt: new Date().toISOString(),
-              updatedBy: "Текущий пользователь",
-            }
-          : c
-      )
-    );
-    toast.success(
-      col.status === "archived"
-        ? `«${col.name}» восстановлена`
-        : `«${col.name}» архивирована`
-    );
-  };
 
   return (
     <AdminLayout>
@@ -138,28 +104,6 @@ export default function CollectionsPage() {
                 <SelectItem value="seller">Продавца</SelectItem>
               </SelectContent>
             </Select>
-
-            <Select value={filters.visibility} onValueChange={(v) => update("visibility", v)}>
-              <SelectTrigger className="w-[140px] h-9 bg-card">
-                <SelectValue placeholder="Видимость" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все</SelectItem>
-                <SelectItem value="public">Публичные</SelectItem>
-                <SelectItem value="service">Служебные</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.status} onValueChange={(v) => update("status", v)}>
-              <SelectTrigger className="w-[130px] h-9 bg-card">
-                <SelectValue placeholder="Статус" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Активные</SelectItem>
-                <SelectItem value="archived">В архиве</SelectItem>
-                <SelectItem value="all">Все</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
 
@@ -167,7 +111,6 @@ export default function CollectionsPage() {
         <div className="pt-4">
           {filtered.length === 0 ? (
             collections.length === 0 ? (
-              /* True empty state */
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-16 px-6">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
                   <ShoppingBag className="h-6 w-6 text-muted-foreground" />
@@ -184,7 +127,6 @@ export default function CollectionsPage() {
                 </Button>
               </div>
             ) : (
-              /* Filter-empty */
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-12 px-6">
                 <p className="text-sm text-muted-foreground">
                   Ничего не найдено по заданным фильтрам
@@ -192,124 +134,87 @@ export default function CollectionsPage() {
               </div>
             )
           ) : (
-            /* Table */
             <div className="rounded-lg border bg-card overflow-hidden">
               {/* Header row */}
               <div className="bg-table-header px-4 py-2.5 border-b">
-                <div className="grid grid-cols-[1fr_90px_100px_100px_100px_140px_50px] gap-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="grid grid-cols-[1fr_100px_90px_100px_100px_140px_50px] gap-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   <span>Название</span>
+                  <span>Продавец</span>
                   <span>Тип</span>
                   <span>Режим</span>
                   <span>Товаров</span>
-                  <span>Видимость</span>
                   <span>Обновлено</span>
                   <span />
                 </div>
               </div>
 
               {/* Data rows */}
-              {filtered.map((col) => {
-                const isArchived = col.status === "archived";
-                return (
-                  <div
-                    key={col.id}
+              {filtered.map((col) => (
+                <div
+                  key={col.id}
+                  className="grid grid-cols-[1fr_100px_90px_100px_100px_140px_50px] gap-4 items-center px-4 py-3 border-b last:border-0 transition-colors hover:bg-table-row-hover"
+                >
+                  {/* Name + slug */}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{col.name}</p>
+                    <p className="text-xs text-muted-foreground font-mono truncate">{col.slug}</p>
+                  </div>
+
+                  {/* Seller */}
+                  <span className="text-xs text-muted-foreground truncate">{col.seller}</span>
+
+                  {/* Type */}
+                  <span
                     className={cn(
-                      "grid grid-cols-[1fr_90px_100px_100px_100px_140px_50px] gap-4 items-center px-4 py-3 border-b last:border-0 transition-colors hover:bg-table-row-hover",
-                      isArchived && "bg-table-row-archived opacity-60"
+                      "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium w-fit",
+                      col.type === "global"
+                        ? "bg-badge-global/15 text-badge-global"
+                        : "bg-badge-seller/15 text-badge-seller"
                     )}
                   >
-                    {/* Name */}
-                    <p
-                      className={cn(
-                        "text-sm font-medium truncate",
-                        isArchived && "line-through text-muted-foreground"
-                      )}
-                    >
-                      {col.name}
-                    </p>
+                    {col.type === "global" ? "Global" : "Seller"}
+                  </span>
 
-                    {/* Type */}
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium w-fit",
-                        col.type === "global"
-                          ? "bg-badge-global/15 text-badge-global"
-                          : "bg-badge-seller/15 text-badge-seller"
-                      )}
-                    >
-                      {col.type === "global" ? "Global" : "Seller"}
-                    </span>
+                  {/* Mode */}
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    {col.mode === "manual" ? (
+                      <>
+                        <Hand className="h-3.5 w-3.5" />
+                        Ручная
+                      </>
+                    ) : (
+                      <>
+                        <Tags className="h-3.5 w-3.5" />
+                        По тегам
+                      </>
+                    )}
+                  </span>
 
-                    {/* Mode */}
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      {col.mode === "manual" ? (
-                        <>
-                          <Hand className="h-3.5 w-3.5" />
-                          Ручная
-                        </>
-                      ) : (
-                        <>
-                          <Tags className="h-3.5 w-3.5" />
-                          По тегам
-                        </>
-                      )}
-                    </span>
+                  {/* Products count */}
+                  <span className="text-sm tabular-nums">{col.productsCount}</span>
 
-                    {/* Products count */}
-                    <span className="text-sm tabular-nums">{col.productsCount}</span>
-
-                    {/* Visibility */}
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium w-fit",
-                        col.visibility === "public"
-                          ? "bg-badge-public/15 text-badge-public"
-                          : "bg-badge-service/15 text-badge-service"
-                      )}
-                    >
-                      {col.visibility === "public" ? "Публичная" : "Служебная"}
-                    </span>
-
-                    {/* Updated */}
-                    <div className="text-xs text-muted-foreground leading-relaxed">
-                      <p>{format(new Date(col.updatedAt), "dd MMM yyyy", { locale: ru })}</p>
-                      <p className="truncate">{col.updatedBy}</p>
-                    </div>
-
-                    {/* Actions */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-44 bg-popover z-50">
-                        <DropdownMenuItem className="gap-2" onClick={() => navigate(`/collections/${col.id}/edit`)}>
-                          <Pencil className="h-4 w-4" />
-                          Редактировать
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="gap-2"
-                          onClick={() => handleToggleArchive(col)}
-                        >
-                          {isArchived ? (
-                            <>
-                              <ArchiveRestore className="h-4 w-4" />
-                              Восстановить
-                            </>
-                          ) : (
-                            <>
-                              <Archive className="h-4 w-4" />
-                              Архивировать
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  {/* Updated */}
+                  <div className="text-xs text-muted-foreground leading-relaxed">
+                    <p>{format(new Date(col.updatedAt), "dd MMM yyyy", { locale: ru })}</p>
+                    <p className="truncate">{col.updatedBy}</p>
                   </div>
-                );
-              })}
+
+                  {/* Actions */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44 bg-popover z-50">
+                      <DropdownMenuItem className="gap-2" onClick={() => navigate(`/collections/${col.id}/edit`)}>
+                        <Pencil className="h-4 w-4" />
+                        Редактировать
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
             </div>
           )}
         </div>

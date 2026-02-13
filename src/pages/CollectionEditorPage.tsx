@@ -25,7 +25,7 @@ import { mockTags } from "@/data/mockTags";
 import { toast } from "sonner";
 
 type CollectionMode = "manual" | "by_tags";
-type CollectionVisibility = "public" | "service";
+
 
 const defaultConditions: TagConditions = {
   groups: [],
@@ -59,7 +59,7 @@ export default function CollectionEditorPage() {
   const [slug, setSlug] = useState("");
   const [autoSlug, setAutoSlug] = useState(true);
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<CollectionVisibility>("public");
+  
   const [mode, setMode] = useState<CollectionMode>("manual");
 
   // Manual mode
@@ -235,21 +235,6 @@ export default function CollectionEditorPage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Видимость</Label>
-                <Select
-                  value={visibility}
-                  onValueChange={(v) => setVisibility(v as CollectionVisibility)}
-                >
-                  <SelectTrigger className="bg-card">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Публичная</SelectItem>
-                    <SelectItem value="service">Служебная</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Collection mode */}
