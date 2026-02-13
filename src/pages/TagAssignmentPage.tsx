@@ -15,8 +15,8 @@ type PageMode = "marketer" | "seller";
 
 const defaultFilters: ProductFiltersState = {
   search: "",
-  category: "all",
-  subcategory: "all",
+  categories: [],
+  subcategories: [],
   seller: "all",
   priceMin: "",
   priceMax: "",
@@ -48,8 +48,8 @@ export default function TagAssignmentPage() {
       result = result.filter((p) => p.productId.toLowerCase().includes(q));
     }
 
-    if (filters.category !== "all") {
-      result = result.filter((p) => p.category === filters.category);
+    if (filters.categories.length > 0) {
+      result = result.filter((p) => filters.categories.includes(p.category));
     }
 
     if (filters.seller !== "all") {
