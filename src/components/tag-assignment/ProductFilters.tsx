@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, ChevronDown, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -34,6 +35,8 @@ export interface ProductFiltersState {
   seller: string;
   priceMin: string;
   priceMax: string;
+  ratingMin: string;
+  ratingMax: string;
   productIdSearch: string;
   template: string;
   tag: string;
@@ -42,6 +45,7 @@ export interface ProductFiltersState {
 interface ProductFiltersProps {
   filters: ProductFiltersState;
   onChange: (filters: ProductFiltersState) => void;
+  onApply: () => void;
   mode: "marketer" | "seller";
 }
 
@@ -135,7 +139,7 @@ function MultiSelectFilter({
   );
 }
 
-export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps) {
+export function ProductFilters({ filters, onChange, onApply, mode }: ProductFiltersProps) {
   const update = (key: keyof ProductFiltersState, value: string) => {
     onChange({ ...filters, [key]: value });
   };
@@ -143,16 +147,15 @@ export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps)
   const activeTags = mockTags.filter((t) => t.status === "active");
 
   // Collect available subcategories based on selected categories
-  const availableSubcategories = filters.categories.length > 0
+  const availableSubcategories = filters.categories && filters.categories.length > 0
     ? mockCategoryTree
         .filter((c) => filters.categories.includes(c.name))
         .flatMap((c) => c.subcategories)
     : [];
 
   const handleCategoriesChange = (cats: string[]) => {
-    // Remove subcategories that no longer belong to selected categories
     const validSubs = cats.length > 0
-      ? filters.subcategories.filter((sub) =>
+      ? (filters.subcategories || []).filter((sub) =>
           mockCategoryTree.some((c) => cats.includes(c.name) && c.subcategories.includes(sub))
         )
       : [];
@@ -218,16 +221,16 @@ export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps)
         <MultiSelectFilter
           label="Категория"
           options={mockCategories}
-          selected={filters.categories}
+          selected={filters.categories || []}
           onChange={handleCategoriesChange}
         />
 
-        {/* Subcategories multi-select — only when categories are selected */}
+        {/* Subcategories multi-select */}
         {availableSubcategories.length > 0 && (
           <MultiSelectFilter
             label="Подкатегория"
             options={availableSubcategories}
-            selected={filters.subcategories}
+            selected={filters.subcategories || []}
             onChange={(subs) => onChange({ ...filters, subcategories: subs })}
           />
         )}
@@ -265,6 +268,36 @@ export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps)
             className="w-[100px] h-9 bg-card"
           />
         </div>
+
+        {/* Rating range */}
+        <div className="flex items-center gap-1.5">
+          <Input
+            type="number"
+            placeholder="Рейтинг от"
+            value={filters.ratingMin}
+            onChange={(e) => update("ratingMin", e.target.value)}
+            className="w-[110px] h-9 bg-card"
+            min="0"
+            max="5"
+            step="0.1"
+          />
+          <span className="text-muted-foreground text-xs">—</span>
+          <Input
+            type="number"
+            placeholder="до"
+            value={filters.ratingMax}
+            onChange={(e) => update("ratingMax", e.target.value)}
+            className="w-[80px] h-9 bg-card"
+            min="0"
+            max="5"
+            step="0.1"
+          />
+        </div>
+
+        {/* Apply button */}
+        <Button size="sm" className="h-9 px-5" onClick={onApply}>
+          Показать
+        </Button>
       </div>
     </div>
   );

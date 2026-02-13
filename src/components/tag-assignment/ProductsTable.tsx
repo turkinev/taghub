@@ -58,15 +58,21 @@ export function ProductsTable({
     new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(price);
 
   const showType = mode === "marketer";
-  const gridCols = showType
-    ? "grid-cols-[40px_1fr_100px_100px_130px_1fr_70px]"
-    : "grid-cols-[40px_1fr_100px_100px_130px_1fr]";
+  const showSeller = mode === "seller";
+  
+  // marketer: checkbox, name, price, tags-col1, tags-col2, type
+  // seller: checkbox, name, seller, price, tags-col1, tags-col2
+  const gridTemplate = showType
+    ? "40px 1fr 100px 130px 1fr 70px"
+    : showSeller
+      ? "40px 1fr 100px 100px 130px 1fr"
+      : "40px 1fr 100px 130px 1fr";
 
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
       {/* Header */}
       <div className="bg-table-header px-4 py-2.5 border-b">
-        <div className={cn("grid gap-3 items-center text-xs font-medium uppercase tracking-wider text-muted-foreground", gridCols)}>
+        <div className="grid gap-3 items-center text-xs font-medium uppercase tracking-wider text-muted-foreground" style={{ gridTemplateColumns: gridTemplate }}>
           <div className="flex justify-center">
             <Checkbox
               checked={allSelected}
@@ -80,7 +86,7 @@ export function ProductsTable({
             />
           </div>
           <span>Товар</span>
-          <span>Продавец</span>
+          {showSeller && <span>Продавец</span>}
           <span>Цена</span>
           <span>Теги</span>
           <span />
@@ -99,12 +105,12 @@ export function ProductsTable({
             onClick={() => onProductClick(product)}
             className={cn(
               "grid gap-3 items-center px-4 py-3 border-b last:border-0 cursor-pointer transition-colors",
-              gridCols,
               isActive
                 ? "bg-primary/5 border-l-2 border-l-primary"
                 : "hover:bg-table-row-hover",
               isSelected && !isActive && "bg-primary/[0.03]"
             )}
+            style={{ gridTemplateColumns: gridTemplate }}
           >
             {/* Checkbox */}
             <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
@@ -123,7 +129,9 @@ export function ProductsTable({
             </div>
 
             {/* Seller */}
-            <div className="text-xs text-muted-foreground truncate">{product.seller}</div>
+            {showSeller && (
+              <div className="text-xs text-muted-foreground truncate">{product.seller}</div>
+            )}
 
             {/* Price */}
             <div className="text-sm font-medium tabular-nums">{formatPrice(product.price)}</div>
