@@ -20,8 +20,7 @@ const defaultFilters: ProductFiltersState = {
   seller: "all",
   priceMin: "",
   priceMax: "",
-  ratingMin: "",
-  ratingMax: "",
+  rating: [],
   productIdSearch: "",
   template: "all",
   tag: "all",
@@ -75,14 +74,9 @@ export default function TagAssignmentPage() {
       result = result.filter((p) => p.price <= max);
     }
 
-    if (filters.ratingMin) {
-      const min = Number(filters.ratingMin);
-      result = result.filter((p) => p.rating >= min);
-    }
-
-    if (filters.ratingMax) {
-      const max = Number(filters.ratingMax);
-      result = result.filter((p) => p.rating <= max);
+    if (filters.rating && filters.rating.length > 0) {
+      const ratings = filters.rating.map(Number);
+      result = result.filter((p) => ratings.includes(p.rating));
     }
 
     // Seller-mode filters
