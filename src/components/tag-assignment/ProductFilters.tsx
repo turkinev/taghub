@@ -235,20 +235,6 @@ export function ProductFilters({ filters, onChange, onApply, mode }: ProductFilt
           />
         )}
 
-        {/* Seller - marketer only */}
-        {mode === "marketer" && (
-          <Select value={filters.seller} onValueChange={(v) => update("seller", v)}>
-            <SelectTrigger className="w-[150px] h-9 bg-card">
-              <SelectValue placeholder="Продавец" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все продавцы</SelectItem>
-              {mockSellers.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
 
         {/* Price range */}
         <div className="flex items-center gap-1.5">
