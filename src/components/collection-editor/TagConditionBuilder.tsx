@@ -179,10 +179,10 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
         </div>
       )}
 
-      {/* Price filter */}
-      <div className="space-y-2 pt-2 border-t">
-        <Label className="text-xs font-semibold">Фильтр по цене</Label>
-        <div className="flex items-center gap-2">
+      {/* Filters grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t">
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold">Цена от</Label>
           <Input
             type="number"
             placeholder="Мин"
@@ -190,7 +190,9 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
             onChange={(e) => onChange({ ...conditions, priceMin: e.target.value })}
             className="h-8 text-sm"
           />
-          <span className="text-muted-foreground text-xs">—</span>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold">Цена до</Label>
           <Input
             type="number"
             placeholder="Макс"
@@ -199,55 +201,49 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
             className="h-8 text-sm"
           />
         </div>
-      </div>
-
-      {/* Rating filter */}
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold">Рейтинг</Label>
-        <Select
-          value={conditions.rating}
-          onValueChange={(v) => onChange({ ...conditions, rating: v })}
-        >
-          <SelectTrigger className="h-8 text-sm">
-            <SelectValue placeholder="Любой" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Любой</SelectItem>
-            {["-1", "0", "1", "2", "3"].map((r) => (
-              <SelectItem key={r} value={r}>{r}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Template filter */}
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold">Шаблон</Label>
-        <Input
-          value={conditions.template}
-          onChange={(e) => onChange({ ...conditions, template: e.target.value })}
-          placeholder="Название шаблона"
-          className="h-8 text-sm"
-        />
-      </div>
-
-      {/* Sort */}
-      <div className="space-y-2">
-        <Label className="text-xs font-semibold">Сортировка</Label>
-        <Select
-          value={conditions.sort}
-          onValueChange={(v) => onChange({ ...conditions, sort: v })}
-        >
-          <SelectTrigger className="h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="manual">Ручная</SelectItem>
-            <SelectItem value="popularity">По популярности</SelectItem>
-            <SelectItem value="price_asc">По цене ↑</SelectItem>
-            <SelectItem value="price_desc">По цене ↓</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold">Рейтинг</Label>
+          <Select
+            value={conditions.rating}
+            onValueChange={(v) => onChange({ ...conditions, rating: v })}
+          >
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue placeholder="Любой" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Любой</SelectItem>
+              {["-1", "0", "1", "2", "3"].map((r) => (
+                <SelectItem key={r} value={r}>{r}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold">Шаблон</Label>
+          <Input
+            value={conditions.template}
+            onChange={(e) => onChange({ ...conditions, template: e.target.value })}
+            placeholder="Название шаблона"
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs font-semibold">Сортировка</Label>
+          <Select
+            value={conditions.sort}
+            onValueChange={(v) => onChange({ ...conditions, sort: v })}
+          >
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">Ручная</SelectItem>
+              <SelectItem value="popularity">По популярности</SelectItem>
+              <SelectItem value="price_asc">По цене ↑</SelectItem>
+              <SelectItem value="price_desc">По цене ↓</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );
