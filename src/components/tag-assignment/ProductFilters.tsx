@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockCategories } from "@/data/mockTags";
+import { mockCategories, mockCategoryTree, mockTags } from "@/data/mockTags";
 
 const mockSellers = [
   "ООО «Магазин»",
@@ -17,24 +17,44 @@ const mockSellers = [
   "SportLife",
 ];
 
+const mockTemplates = [
+  "Шаблон 1",
+  "Шаблон 2",
+  "Шаблон 3",
+];
+
 export interface ProductFiltersState {
   search: string;
   category: string;
+  subcategory: string;
   seller: string;
   priceMin: string;
   priceMax: string;
   productIdSearch: string;
+  template: string;
+  tag: string;
 }
 
 interface ProductFiltersProps {
   filters: ProductFiltersState;
   onChange: (filters: ProductFiltersState) => void;
+  mode: "marketer" | "seller";
 }
 
-export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
+export function ProductFilters({ filters, onChange, mode }: ProductFiltersProps) {
   const update = (key: keyof ProductFiltersState, value: string) => {
-    onChange({ ...filters, [key]: value });
+    const next = { ...filters, [key]: value };
+    // Reset subcategory when category changes
+    if (key === "category") {
+      next.subcategory = "all";
+    }
+    onChange(next);
   };
+
+  const activeTags = mockTags.filter((t) => t.status === "active");
+  const selectedCategoryTree = filters.category !== "all"
+    ? mockCategoryTree.find((c) => c.name === filters.category)
+    : null;
 
   return (
     <div className="sticky top-14 z-20 -mx-4 bg-background/95 backdrop-blur-sm border-b px-4 py-3 lg:-mx-6 lg:px-6">
@@ -61,6 +81,36 @@ export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
           />
         </div>
 
+        {mode === "seller" && (
+          <>
+            {/* Template */}
+            <Select value={filters.template} onValueChange={(v) => update("template", v)}>
+              <SelectTrigger className="w-[150px] h-9 bg-card">
+                <SelectValue placeholder="Шаблон" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все шаблоны</SelectItem>
+                {mockTemplates.map((t) => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Tag filter */}
+            <Select value={filters.tag} onValueChange={(v) => update("tag", v)}>
+              <SelectTrigger className="w-[150px] h-9 bg-card">
+                <SelectValue placeholder="Тег" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все теги</SelectItem>
+                {activeTags.map((tag) => (
+                  <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
+
         {/* Category */}
         <Select value={filters.category} onValueChange={(v) => update("category", v)}>
           <SelectTrigger className="w-[150px] h-9 bg-card">
@@ -74,18 +124,35 @@ export function ProductFilters({ filters, onChange }: ProductFiltersProps) {
           </SelectContent>
         </Select>
 
-        {/* Seller */}
-        <Select value={filters.seller} onValueChange={(v) => update("seller", v)}>
-          <SelectTrigger className="w-[150px] h-9 bg-card">
-            <SelectValue placeholder="Продавец" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все продавцы</SelectItem>
-            {mockSellers.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Subcategory - only when a category is selected and in seller mode */}
+        {mode === "seller" && selectedCategoryTree && (
+          <Select value={filters.subcategory} onValueChange={(v) => update("subcategory", v)}>
+            <SelectTrigger className="w-[160px] h-9 bg-card">
+              <SelectValue placeholder="Подкатегория" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все подкатегории</SelectItem>
+              {selectedCategoryTree.subcategories.map((sub) => (
+                <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* Seller - marketer only */}
+        {mode === "marketer" && (
+          <Select value={filters.seller} onValueChange={(v) => update("seller", v)}>
+            <SelectTrigger className="w-[150px] h-9 bg-card">
+              <SelectValue placeholder="Продавец" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все продавцы</SelectItem>
+              {mockSellers.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Price range */}
         <div className="flex items-center gap-1.5">

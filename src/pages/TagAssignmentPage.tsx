@@ -7,21 +7,32 @@ import { ProductTagsPanel } from "@/components/tag-assignment/ProductTagsPanel";
 import { mockProducts, Product, ProductTag } from "@/data/mockProducts";
 import { mockTags } from "@/data/mockTags";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+type PageMode = "marketer" | "seller";
 
 const defaultFilters: ProductFiltersState = {
   search: "",
   category: "all",
+  subcategory: "all",
   seller: "all",
   priceMin: "",
   priceMax: "",
   productIdSearch: "",
+  template: "all",
+  tag: "all",
 };
 
+const SELLER_PAGE_SIZE = 30;
+
 export default function TagAssignmentPage() {
+  const [mode, setMode] = useState<PageMode>("marketer");
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [filters, setFilters] = useState<ProductFiltersState>(defaultFilters);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -54,10 +65,27 @@ export default function TagAssignmentPage() {
       result = result.filter((p) => p.price <= max);
     }
 
-    return result;
-  }, [products, filters]);
+    // Seller-mode filters
+    if (mode === "seller" && filters.tag !== "all") {
+      result = result.filter((p) => p.tags.some((t) => t.tagId === filters.tag));
+    }
 
-  // Sync helper: when tagging an SKU, also tag the parent SPU; when tagging SPU, tag all child SKUs
+    return result;
+  }, [products, filters, mode]);
+
+  // Pagination for seller mode
+  const totalPages = mode === "seller" ? Math.max(1, Math.ceil(filteredProducts.length / SELLER_PAGE_SIZE)) : 1;
+  const displayProducts = mode === "seller"
+    ? filteredProducts.slice((currentPage - 1) * SELLER_PAGE_SIZE, currentPage * SELLER_PAGE_SIZE)
+    : filteredProducts;
+
+  // Reset page when filters change
+  const handleFiltersChange = (newFilters: ProductFiltersState) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  // Sync helper
   const syncTagOperation = useCallback(
     (
       currentProducts: Product[],
@@ -71,16 +99,13 @@ export default function TagAssignmentPage() {
 
       const idsToUpdate = new Set<string>([targetId]);
 
-      // SPU → all child SKUs
       if (target.type === "SPU") {
         currentProducts
           .filter((p) => p.parentSpuId === target.id)
           .forEach((p) => idsToUpdate.add(p.id));
       }
-      // SKU → parent SPU
       if (target.type === "SKU" && target.parentSpuId) {
         idsToUpdate.add(target.parentSpuId);
-        // Also all sibling SKUs of that SPU
         currentProducts
           .filter((p) => p.parentSpuId === target.parentSpuId)
           .forEach((p) => idsToUpdate.add(p.id));
@@ -94,7 +119,7 @@ export default function TagAssignmentPage() {
           const newTag: ProductTag = {
             tagId,
             tagName: tagName || "",
-            source: "marketer",
+            source: mode === "seller" ? "seller" : "marketer",
           };
           return { ...p, tags: [...p.tags, newTag] };
         } else {
@@ -102,7 +127,7 @@ export default function TagAssignmentPage() {
         }
       });
     },
-    []
+    [mode]
   );
 
   const handleBulkAssign = (tagId: string) => {
@@ -139,7 +164,6 @@ export default function TagAssignmentPage() {
 
     setProducts((prev) => {
       const updated = syncTagOperation(prev, productId, "add", tagId, tag.name);
-      // Update active product ref
       const updatedActive = updated.find((p) => p.id === productId);
       if (updatedActive) setActiveProduct(updatedActive);
       return updated;
@@ -161,7 +185,6 @@ export default function TagAssignmentPage() {
     setActiveProduct((prev) => (prev?.id === product.id ? null : product));
   };
 
-  // Keep activeProduct in sync with products state
   const currentActiveProduct = activeProduct
     ? products.find((p) => p.id === activeProduct.id) || null
     : null;
@@ -171,30 +194,77 @@ export default function TagAssignmentPage() {
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="mb-0">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Назначение тегов</h1>
-          <p className="text-sm text-muted-foreground">
-            Назначайте теги товарам вручную или массово
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Назначение тегов</h1>
+              <p className="text-sm text-muted-foreground">
+                Назначайте теги товарам вручную или массово
+                {mode === "seller" && (
+                  <span className="ml-1 font-semibold text-destructive"> — не более 5 000 товаров</span>
+                )}
+              </p>
+            </div>
+            {/* Hidden mode switcher — triple-click to toggle */}
+            <button
+              className="opacity-0 w-4 h-4 cursor-default select-none"
+              aria-hidden
+              tabIndex={-1}
+              onDoubleClick={() => setMode((m) => (m === "marketer" ? "seller" : "marketer"))}
+            />
+          </div>
         </div>
 
         {/* Filters */}
-        <ProductFilters filters={filters} onChange={setFilters} />
+        <ProductFilters filters={filters} onChange={handleFiltersChange} mode={mode} />
 
-        {/* Content area: table + optional side panel */}
+        {/* Content area */}
         <div className="flex flex-1 gap-0 pt-4 min-h-0">
-          <div className="flex-1 min-w-0">
-            {filteredProducts.length === 0 ? (
+          <div className="flex-1 min-w-0 flex flex-col">
+            {displayProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-lg border border-dashed bg-card py-12 px-6">
                 <p className="text-sm text-muted-foreground">Товары не найдены</p>
               </div>
             ) : (
               <ProductsTable
-                products={filteredProducts}
+                products={displayProducts}
                 selectedIds={selectedIds}
                 onSelectionChange={setSelectedIds}
                 onProductClick={handleProductClick}
                 activeProductId={currentActiveProduct?.id}
+                mode={mode}
               />
+            )}
+
+            {/* Pagination for seller mode */}
+            {mode === "seller" && totalPages > 1 && (
+              <div className="flex items-center justify-between px-2 py-3">
+                <p className="text-xs text-muted-foreground">
+                  Показано {(currentPage - 1) * SELLER_PAGE_SIZE + 1}–{Math.min(currentPage * SELLER_PAGE_SIZE, filteredProducts.length)} из {filteredProducts.length}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground px-2">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
 

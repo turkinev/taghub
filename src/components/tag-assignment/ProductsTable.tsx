@@ -10,6 +10,7 @@ interface ProductsTableProps {
   onSelectionChange: (ids: Set<string>) => void;
   onProductClick: (product: Product) => void;
   activeProductId?: string;
+  mode: "marketer" | "seller";
 }
 
 const sourceIcon: Record<TagSource, React.ReactNode> = {
@@ -30,6 +31,7 @@ export function ProductsTable({
   onSelectionChange,
   onProductClick,
   activeProductId,
+  mode,
 }: ProductsTableProps) {
   const allSelected = products.length > 0 && products.every((p) => selectedIds.has(p.id));
   const someSelected = products.some((p) => selectedIds.has(p.id)) && !allSelected;
@@ -55,11 +57,16 @@ export function ProductsTable({
   const formatPrice = (price: number) =>
     new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(price);
 
+  const showType = mode === "marketer";
+  const gridCols = showType
+    ? "grid-cols-[40px_1fr_100px_100px_130px_1fr_70px]"
+    : "grid-cols-[40px_1fr_100px_100px_130px_1fr]";
+
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
       {/* Header */}
       <div className="bg-table-header px-4 py-2.5 border-b">
-        <div className="grid grid-cols-[40px_1fr_100px_100px_130px_1fr_70px] gap-3 items-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className={cn("grid gap-3 items-center text-xs font-medium uppercase tracking-wider text-muted-foreground", gridCols)}>
           <div className="flex justify-center">
             <Checkbox
               checked={allSelected}
@@ -77,7 +84,7 @@ export function ProductsTable({
           <span>Цена</span>
           <span>Теги</span>
           <span />
-          <span>Тип</span>
+          {showType && <span>Тип</span>}
         </div>
       </div>
 
@@ -91,7 +98,8 @@ export function ProductsTable({
             key={product.id}
             onClick={() => onProductClick(product)}
             className={cn(
-              "grid grid-cols-[40px_1fr_100px_100px_130px_1fr_70px] gap-3 items-center px-4 py-3 border-b last:border-0 cursor-pointer transition-colors",
+              "grid gap-3 items-center px-4 py-3 border-b last:border-0 cursor-pointer transition-colors",
+              gridCols,
               isActive
                 ? "bg-primary/5 border-l-2 border-l-primary"
                 : "hover:bg-table-row-hover",
@@ -138,19 +146,21 @@ export function ProductsTable({
               )}
             </div>
 
-            {/* Type */}
-            <div>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                  product.type === "SPU"
-                    ? "bg-badge-global/15 text-badge-global"
-                    : "bg-accent text-muted-foreground"
-                )}
-              >
-                {product.type}
-              </span>
-            </div>
+            {/* Type - marketer only */}
+            {showType && (
+              <div>
+                <span
+                  className={cn(
+                    "inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                    product.type === "SPU"
+                      ? "bg-badge-global/15 text-badge-global"
+                      : "bg-accent text-muted-foreground"
+                  )}
+                >
+                  {product.type}
+                </span>
+              </div>
+            )}
           </div>
         );
       })}
