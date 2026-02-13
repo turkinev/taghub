@@ -28,6 +28,8 @@ export interface TagConditions {
   logic: GroupLogic;
   priceMin: string;
   priceMax: string;
+  rating: string;
+  template: string;
   sort: string;
 }
 
@@ -197,6 +199,36 @@ export function TagConditionBuilder({ conditions, onChange }: TagConditionBuilde
             className="h-8 text-sm"
           />
         </div>
+      </div>
+
+      {/* Rating filter */}
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold">Рейтинг</Label>
+        <Select
+          value={conditions.rating}
+          onValueChange={(v) => onChange({ ...conditions, rating: v })}
+        >
+          <SelectTrigger className="h-8 text-sm">
+            <SelectValue placeholder="Любой" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Любой</SelectItem>
+            {["-1", "0", "1", "2", "3"].map((r) => (
+              <SelectItem key={r} value={r}>{r}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Template filter */}
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold">Шаблон</Label>
+        <Input
+          value={conditions.template}
+          onChange={(e) => onChange({ ...conditions, template: e.target.value })}
+          placeholder="Название шаблона"
+          className="h-8 text-sm"
+        />
       </div>
 
       {/* Sort */}
