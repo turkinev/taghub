@@ -6,12 +6,21 @@ import { TagsTable } from "@/components/tags/TagsTable";
 import { TagModal, TagFormData } from "@/components/tags/TagModal";
 import { TagsEmptyState } from "@/components/tags/TagsEmptyState";
 import { TagsTableSkeleton } from "@/components/tags/TagsTableSkeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { mockTags, Tag } from "@/data/mockTags";
 import { toast } from "sonner";
 
 const defaultFilters: TagFilters = {
   search: "",
-  ownerType: "all",
   visibility: "all",
   status: "active",
   sort: "updated",
@@ -23,41 +32,24 @@ export default function TagsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Demo loading toggle
-  const simulateLoading = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1200);
-  };
+  const [archiveTarget, setArchiveTarget] = useState<Tag | null>(null);
 
   const filteredTags = useMemo(() => {
     let result = [...tags];
 
-    // Search
     if (filters.search) {
       const q = filters.search.toLowerCase();
-      result = result.filter(
-        (t) =>
-          t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q)
-      );
+      result = result.filter((t) => t.name.toLowerCase().includes(q));
     }
 
-    // Owner type
-    if (filters.ownerType !== "all") {
-      result = result.filter((t) => t.ownerType === filters.ownerType);
-    }
-
-    // Visibility
     if (filters.visibility !== "all") {
       result = result.filter((t) => t.visibility === filters.visibility);
     }
 
-    // Status
     if (filters.status !== "all") {
       result = result.filter((t) => t.status === filters.status);
     }
 
-    // Sort
     switch (filters.sort) {
       case "name":
         result.sort((a, b) => a.name.localeCompare(b.name, "ru"));
@@ -89,7 +81,6 @@ export default function TagsPage() {
       ...tag,
       id: String(Date.now()),
       name: `${tag.name} (копия)`,
-      slug: `${tag.slug}-copy`,
       status: "active",
       updatedAt: new Date().toISOString(),
       updatedBy: "Текущий пользователь",
@@ -99,41 +90,47 @@ export default function TagsPage() {
   };
 
   const handleToggleArchive = (tag: Tag) => {
+    if (tag.status === "archived") {
+      // Restore immediately
+      setTags((prev) =>
+        prev.map((t) =>
+          t.id === tag.id
+            ? { ...t, status: "active" as const, updatedAt: new Date().toISOString(), updatedBy: "Текущий пользователь" }
+            : t
+        )
+      );
+      toast.success(`Тег «${tag.name}» восстановлен`);
+    } else {
+      // Show confirmation dialog
+      setArchiveTarget(tag);
+    }
+  };
+
+  const confirmArchive = () => {
+    if (!archiveTarget) return;
     setTags((prev) =>
       prev.map((t) =>
-        t.id === tag.id
-          ? {
-              ...t,
-              status: t.status === "archived" ? "active" : "archived",
-              updatedAt: new Date().toISOString(),
-              updatedBy: "Текущий пользователь",
-            }
+        t.id === archiveTarget.id
+          ? { ...t, status: "archived" as const, updatedAt: new Date().toISOString(), updatedBy: "Текущий пользователь" }
           : t
       )
     );
-    toast.success(
-      tag.status === "archived"
-        ? `Тег «${tag.name}» восстановлен`
-        : `Тег «${tag.name}» архивирован`
-    );
+    toast.success(`Тег «${archiveTarget.name}» архивирован`);
+    setArchiveTarget(null);
   };
 
   const handleSave = (data: TagFormData) => {
     if (editingTag) {
-      // Update
       setTags((prev) =>
         prev.map((t) =>
           t.id === editingTag.id
             ? {
                 ...t,
                 name: data.name,
-                slug: data.slug,
                 description: data.description || undefined,
                 visibility: data.visibility,
-                ownerType: data.ownerType,
                 restrictions: {
                   categories: data.categories.length > 0 ? data.categories : undefined,
-                  sellers: data.sellers.length > 0 ? data.sellers : undefined,
                   priceMin: data.priceMin ? Number(data.priceMin) : undefined,
                   priceMax: data.priceMax ? Number(data.priceMax) : undefined,
                 },
@@ -145,18 +142,14 @@ export default function TagsPage() {
       );
       toast.success(`Тег «${data.name}» обновлён`);
     } else {
-      // Create
       const newTag: Tag = {
         id: String(Date.now()),
         name: data.name,
-        slug: data.slug,
         description: data.description || undefined,
-        ownerType: data.ownerType,
         visibility: data.visibility,
         status: "active",
         restrictions: {
           categories: data.categories.length > 0 ? data.categories : undefined,
-          sellers: data.sellers.length > 0 ? data.sellers : undefined,
           priceMin: data.priceMin ? Number(data.priceMin) : undefined,
           priceMax: data.priceMax ? Number(data.priceMax) : undefined,
         },
@@ -206,6 +199,22 @@ export default function TagsPage() {
         tag={editingTag}
         onSave={handleSave}
       />
+
+      {/* Archive confirmation dialog */}
+      <AlertDialog open={!!archiveTarget} onOpenChange={(open) => !open && setArchiveTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Архивировать тег?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Внимание! Тег будет отвязан от всех товаров и заархивирован. Вы уверены?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmArchive}>Архивировать</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

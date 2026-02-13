@@ -7,7 +7,6 @@ import {
   Archive,
   ArchiveRestore,
   FolderTree,
-  Store,
   DollarSign,
 } from "lucide-react";
 import { Tag } from "@/data/mockTags";
@@ -33,9 +32,8 @@ export function TagsTable({ tags, onEdit, onDuplicate, onToggleArchive }: TagsTa
     <div className="rounded-lg border bg-card overflow-hidden">
       {/* Header */}
       <div className="bg-table-header px-4 py-2.5 border-b">
-        <div className="grid grid-cols-[1fr_100px_110px_100px_130px_140px_50px] gap-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="grid grid-cols-[1fr_110px_100px_130px_140px_50px] gap-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <span>Название</span>
-          <span>Владелец</span>
           <span>Видимость</span>
           <span>Ограничения</span>
           <span>Использование</span>
@@ -51,30 +49,18 @@ export function TagsTable({ tags, onEdit, onDuplicate, onToggleArchive }: TagsTa
           <div
             key={tag.id}
             className={cn(
-              "grid grid-cols-[1fr_100px_110px_100px_130px_140px_50px] gap-4 items-center px-4 py-3 border-b last:border-0 transition-colors hover:bg-table-row-hover",
+              "grid grid-cols-[1fr_110px_100px_130px_140px_50px] gap-4 items-center px-4 py-3 border-b last:border-0 transition-colors hover:bg-table-row-hover",
               isArchived && "bg-table-row-archived opacity-60"
             )}
           >
-            {/* Name + slug */}
+            {/* Name */}
             <div className="min-w-0">
               <p className={cn("text-sm font-medium truncate", isArchived && "line-through text-muted-foreground")}>
                 {tag.name}
               </p>
-              <p className="text-xs text-muted-foreground truncate">{tag.slug}</p>
-            </div>
-
-            {/* Owner type */}
-            <div>
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-                  tag.ownerType === "global"
-                    ? "bg-badge-global/15 text-badge-global"
-                    : "bg-badge-seller/15 text-badge-seller"
-                )}
-              >
-                {tag.ownerType === "global" ? "Global" : "Seller"}
-              </span>
+              {tag.description && (
+                <p className="text-xs text-muted-foreground truncate">{tag.description}</p>
+              )}
             </div>
 
             {/* Visibility */}
@@ -96,11 +82,6 @@ export function TagsTable({ tags, onEdit, onDuplicate, onToggleArchive }: TagsTa
               {tag.restrictions.categories && tag.restrictions.categories.length > 0 && (
                 <span title={`Категории: ${tag.restrictions.categories.join(", ")}`}>
                   <FolderTree className="h-4 w-4 text-muted-foreground" />
-                </span>
-              )}
-              {tag.restrictions.sellers && tag.restrictions.sellers.length > 0 && (
-                <span title={`Продавцы: ${tag.restrictions.sellers.join(", ")}`}>
-                  <Store className="h-4 w-4 text-muted-foreground" />
                 </span>
               )}
               {(tag.restrictions.priceMin != null || tag.restrictions.priceMax != null) && (

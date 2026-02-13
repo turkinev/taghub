@@ -7,7 +7,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { mockCategories, mockSellers } from "@/data/mockTags";
+import { mockCategories } from "@/data/mockTags";
+
+const mockSellers = [
+  "ООО «Магазин»",
+  "ИП Петров",
+  "TechStore",
+  "FashionHouse",
+  "SportLife",
+];
 
 export interface ProductFiltersState {
   search: string;

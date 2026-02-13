@@ -1,10 +1,8 @@
-export type TagOwnerType = "global" | "seller";
 export type TagVisibility = "public" | "service";
 export type TagStatus = "active" | "archived";
 
 export interface TagRestrictions {
   categories?: string[];
-  sellers?: string[];
   priceMin?: number;
   priceMax?: number;
 }
@@ -12,9 +10,7 @@ export interface TagRestrictions {
 export interface Tag {
   id: string;
   name: string;
-  slug: string;
   description?: string;
-  ownerType: TagOwnerType;
   visibility: TagVisibility;
   status: TagStatus;
   restrictions: TagRestrictions;
@@ -24,32 +20,53 @@ export interface Tag {
   updatedBy: string;
 }
 
-export const mockCategories = [
-  "Электроника",
-  "Одежда",
-  "Обувь",
-  "Дом и сад",
-  "Спорт",
-  "Красота",
-  "Детские товары",
-  "Книги",
+export interface Category {
+  name: string;
+  subcategories: string[];
+}
+
+export const mockCategoryTree: Category[] = [
+  {
+    name: "Электроника",
+    subcategories: ["Смартфоны", "Ноутбуки", "Планшеты", "Наушники", "Аксессуары"],
+  },
+  {
+    name: "Одежда",
+    subcategories: ["Мужская", "Женская", "Детская", "Спортивная"],
+  },
+  {
+    name: "Обувь",
+    subcategories: ["Кроссовки", "Ботинки", "Сандалии", "Туфли"],
+  },
+  {
+    name: "Дом и сад",
+    subcategories: ["Мебель", "Декор", "Освещение", "Инструменты"],
+  },
+  {
+    name: "Спорт",
+    subcategories: ["Тренажёры", "Одежда", "Аксессуары", "Питание"],
+  },
+  {
+    name: "Красота",
+    subcategories: ["Уход за лицом", "Уход за телом", "Макияж", "Парфюмерия"],
+  },
+  {
+    name: "Детские товары",
+    subcategories: ["Игрушки", "Одежда", "Коляски", "Питание"],
+  },
+  {
+    name: "Книги",
+    subcategories: ["Художественные", "Научные", "Учебные", "Детские"],
+  },
 ];
 
-export const mockSellers = [
-  "ООО «Магазин»",
-  "ИП Петров",
-  "TechStore",
-  "FashionHouse",
-  "SportLife",
-];
+export const mockCategories = mockCategoryTree.map((c) => c.name);
 
 export const mockTags: Tag[] = [
   {
     id: "1",
     name: "Новинки",
-    slug: "novinki",
     description: "Недавно добавленные товары",
-    ownerType: "global",
     visibility: "public",
     status: "active",
     restrictions: { categories: ["Электроника", "Одежда"] },
@@ -61,9 +78,7 @@ export const mockTags: Tag[] = [
   {
     id: "2",
     name: "Распродажа",
-    slug: "rasprodazha",
     description: "Товары со скидкой",
-    ownerType: "global",
     visibility: "public",
     status: "active",
     restrictions: { priceMin: 100, priceMax: 5000 },
@@ -75,9 +90,7 @@ export const mockTags: Tag[] = [
   {
     id: "3",
     name: "Премиум",
-    slug: "premium",
     description: "Премиальные товары",
-    ownerType: "global",
     visibility: "public",
     status: "active",
     restrictions: { priceMin: 5000 },
@@ -89,9 +102,7 @@ export const mockTags: Tag[] = [
   {
     id: "4",
     name: "Тестовый",
-    slug: "testovyj",
     description: "Тег для внутреннего тестирования",
-    ownerType: "global",
     visibility: "service",
     status: "active",
     restrictions: {},
@@ -103,22 +114,18 @@ export const mockTags: Tag[] = [
   {
     id: "5",
     name: "Сезон лето",
-    slug: "sezon-leto",
-    ownerType: "seller",
     visibility: "public",
     status: "active",
-    restrictions: { sellers: ["FashionHouse"], categories: ["Одежда", "Обувь"] },
+    restrictions: { categories: ["Одежда", "Обувь"] },
     productsCount: 67,
     collectionsCount: 2,
     updatedAt: "2026-01-28T11:20:00",
-    updatedBy: "FashionHouse",
+    updatedBy: "Менеджер",
   },
   {
     id: "6",
     name: "Хит продаж",
-    slug: "hit-prodazh",
     description: "Популярные товары по продажам",
-    ownerType: "global",
     visibility: "public",
     status: "active",
     restrictions: {},
@@ -130,9 +137,7 @@ export const mockTags: Tag[] = [
   {
     id: "7",
     name: "Уценка",
-    slug: "utsenka",
     description: "Товары с уценкой",
-    ownerType: "global",
     visibility: "public",
     status: "archived",
     restrictions: { priceMax: 1000 },
@@ -144,22 +149,18 @@ export const mockTags: Tag[] = [
   {
     id: "8",
     name: "Эксклюзив",
-    slug: "eksklyuziv",
-    ownerType: "seller",
     visibility: "service",
     status: "active",
-    restrictions: { sellers: ["TechStore"] },
+    restrictions: {},
     productsCount: 23,
     collectionsCount: 1,
     updatedAt: "2026-01-20T15:00:00",
-    updatedBy: "TechStore",
+    updatedBy: "Менеджер",
   },
   {
     id: "9",
     name: "Подарки",
-    slug: "podarki",
     description: "Идеи для подарков",
-    ownerType: "global",
     visibility: "public",
     status: "active",
     restrictions: { categories: ["Электроника", "Красота", "Книги"] },
@@ -171,8 +172,6 @@ export const mockTags: Tag[] = [
   {
     id: "10",
     name: "Архивный тег",
-    slug: "arhivnyj-teg",
-    ownerType: "global",
     visibility: "public",
     status: "archived",
     restrictions: {},
