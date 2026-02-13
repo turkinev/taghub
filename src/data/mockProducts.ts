@@ -15,8 +15,9 @@ export interface Product {
   seller: string;
   category: string;
   price: number;
+  rating: number;
   type: ProductType;
-  parentSpuId?: string; // for SKU items, references their SPU
+  parentSpuId?: string;
   tags: ProductTag[];
   imageUrl?: string;
 }
@@ -29,6 +30,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Электроника",
     price: 89990,
+    rating: 4.8,
     type: "SPU",
     tags: [
       { tagId: "1", tagName: "Новинки", source: "marketer" },
@@ -43,6 +45,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Электроника",
     price: 89990,
+    rating: 4.8,
     type: "SKU",
     parentSpuId: "p1",
     tags: [
@@ -58,6 +61,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Электроника",
     price: 89990,
+    rating: 4.7,
     type: "SKU",
     parentSpuId: "p1",
     tags: [
@@ -72,6 +76,7 @@ export const mockProducts: Product[] = [
     seller: "SportLife",
     category: "Обувь",
     price: 7490,
+    rating: 4.2,
     type: "SPU",
     tags: [
       { tagId: "2", tagName: "Распродажа", source: "marketer" },
@@ -85,6 +90,7 @@ export const mockProducts: Product[] = [
     seller: "SportLife",
     category: "Обувь",
     price: 7490,
+    rating: 4.2,
     type: "SKU",
     parentSpuId: "p4",
     tags: [
@@ -99,6 +105,7 @@ export const mockProducts: Product[] = [
     seller: "FashionHouse",
     category: "Одежда",
     price: 4290,
+    rating: 4.5,
     type: "SPU",
     tags: [
       { tagId: "1", tagName: "Новинки", source: "marketer" },
@@ -112,6 +119,7 @@ export const mockProducts: Product[] = [
     seller: "ООО «Магазин»",
     category: "Красота",
     price: 2190,
+    rating: 3.9,
     type: "SPU",
     tags: [
       { tagId: "9", tagName: "Подарки", source: "marketer" },
@@ -124,6 +132,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Дом и сад",
     price: 32900,
+    rating: 4.6,
     type: "SPU",
     tags: [
       { tagId: "3", tagName: "Премиум", source: "rule" },
@@ -138,6 +147,7 @@ export const mockProducts: Product[] = [
     seller: "ООО «Магазин»",
     category: "Детские товары",
     price: 5690,
+    rating: 4.9,
     type: "SPU",
     tags: [
       { tagId: "9", tagName: "Подарки", source: "marketer" },
@@ -151,6 +161,7 @@ export const mockProducts: Product[] = [
     seller: "ИП Петров",
     category: "Книги",
     price: 1290,
+    rating: 4.9,
     type: "SPU",
     tags: [
       { tagId: "9", tagName: "Подарки", source: "marketer" },
@@ -163,6 +174,7 @@ export const mockProducts: Product[] = [
     seller: "SportLife",
     category: "Спорт",
     price: 45900,
+    rating: 3.5,
     type: "SPU",
     tags: [
       { tagId: "3", tagName: "Премиум", source: "rule" },
@@ -175,6 +187,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Электроника",
     price: 124900,
+    rating: 4.4,
     type: "SPU",
     tags: [
       { tagId: "3", tagName: "Премиум", source: "rule" },
@@ -189,6 +202,7 @@ export const mockProducts: Product[] = [
     seller: "TechStore",
     category: "Электроника",
     price: 124900,
+    rating: 4.4,
     type: "SKU",
     parentSpuId: "p12",
     tags: [
@@ -203,6 +217,7 @@ export const mockProducts: Product[] = [
     seller: "ООО «Магазин»",
     category: "Красота",
     price: 1890,
+    rating: 3.2,
     type: "SPU",
     tags: [],
   },
@@ -213,6 +228,7 @@ export const mockProducts: Product[] = [
     seller: "FashionHouse",
     category: "Одежда",
     price: 12900,
+    rating: 4.1,
     type: "SPU",
     tags: [
       { tagId: "2", tagName: "Распродажа", source: "marketer" },

@@ -20,6 +20,8 @@ const defaultFilters: ProductFiltersState = {
   seller: "all",
   priceMin: "",
   priceMax: "",
+  ratingMin: "",
+  ratingMax: "",
   productIdSearch: "",
   template: "all",
   tag: "all",
@@ -30,12 +32,19 @@ const SELLER_PAGE_SIZE = 30;
 export default function TagAssignmentPage() {
   const [mode, setMode] = useState<PageMode>("marketer");
   const [products, setProducts] = useState<Product[]>(mockProducts);
-  const [filters, setFilters] = useState<ProductFiltersState>(defaultFilters);
+  const [draftFilters, setDraftFilters] = useState<ProductFiltersState>(defaultFilters);
+  const [appliedFilters, setAppliedFilters] = useState<ProductFiltersState>(defaultFilters);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const handleApply = () => {
+    setAppliedFilters({ ...draftFilters });
+    setCurrentPage(1);
+  };
+
   const filteredProducts = useMemo(() => {
+    const filters = appliedFilters;
     let result = [...products];
 
     if (filters.search) {
@@ -66,25 +75,29 @@ export default function TagAssignmentPage() {
       result = result.filter((p) => p.price <= max);
     }
 
+    if (filters.ratingMin) {
+      const min = Number(filters.ratingMin);
+      result = result.filter((p) => p.rating >= min);
+    }
+
+    if (filters.ratingMax) {
+      const max = Number(filters.ratingMax);
+      result = result.filter((p) => p.rating <= max);
+    }
+
     // Seller-mode filters
     if (mode === "seller" && filters.tag !== "all") {
       result = result.filter((p) => p.tags.some((t) => t.tagId === filters.tag));
     }
 
     return result;
-  }, [products, filters, mode]);
+  }, [products, appliedFilters, mode]);
 
   // Pagination for seller mode
   const totalPages = mode === "seller" ? Math.max(1, Math.ceil(filteredProducts.length / SELLER_PAGE_SIZE)) : 1;
   const displayProducts = mode === "seller"
     ? filteredProducts.slice((currentPage - 1) * SELLER_PAGE_SIZE, currentPage * SELLER_PAGE_SIZE)
     : filteredProducts;
-
-  // Reset page when filters change
-  const handleFiltersChange = (newFilters: ProductFiltersState) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  };
 
   // Sync helper
   const syncTagOperation = useCallback(
@@ -230,7 +243,7 @@ export default function TagAssignmentPage() {
         </div>
 
         {/* Filters */}
-        <ProductFilters filters={filters} onChange={handleFiltersChange} mode={mode} />
+        <ProductFilters filters={draftFilters} onChange={setDraftFilters} onApply={handleApply} mode={mode} />
 
         {/* Content area */}
         <div className="flex flex-1 gap-0 pt-4 min-h-0">
