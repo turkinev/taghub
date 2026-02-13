@@ -10,7 +10,6 @@ import {
 
 export interface TagFilters {
   search: string;
-  ownerType: string;
   visibility: string;
   status: string;
   sort: string;
@@ -33,24 +32,12 @@ export function TagsFilters({ filters, onChange }: TagsFiltersProps) {
         <div className="relative flex-1 min-w-[220px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Поиск по названию или коду (slug)"
+            placeholder="Поиск по названию"
             value={filters.search}
             onChange={(e) => update("search", e.target.value)}
             className="pl-9 h-9 bg-card"
           />
         </div>
-
-        {/* Owner type */}
-        <Select value={filters.ownerType} onValueChange={(v) => update("ownerType", v)}>
-          <SelectTrigger className="w-[140px] h-9 bg-card">
-            <SelectValue placeholder="Тип тега" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все</SelectItem>
-            <SelectItem value="global">Глобальные</SelectItem>
-            <SelectItem value="seller">Продавца</SelectItem>
-          </SelectContent>
-        </Select>
 
         {/* Visibility */}
         <Select value={filters.visibility} onValueChange={(v) => update("visibility", v)}>

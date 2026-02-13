@@ -141,12 +141,12 @@ export function ProductTagsPanel({
                   <span
                     className={cn(
                       "ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[10px]",
-                      tag.ownerType === "global"
-                        ? "bg-badge-global/15 text-badge-global"
-                        : "bg-badge-seller/15 text-badge-seller"
+                      tag.visibility === "public"
+                        ? "bg-badge-public/15 text-badge-public"
+                        : "bg-badge-service/15 text-badge-service"
                     )}
                   >
-                    {tag.ownerType === "global" ? "Global" : "Seller"}
+                    {tag.visibility === "public" ? "Публичный" : "Служебный"}
                   </span>
                 </button>
               ))

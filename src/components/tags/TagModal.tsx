@@ -10,17 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
-import { Tag, TagOwnerType, TagVisibility, mockCategories, mockSellers } from "@/data/mockTags";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { X, ChevronRight } from "lucide-react";
+import { Tag, TagVisibility, mockCategoryTree } from "@/data/mockTags";
+import { cn } from "@/lib/utils";
 
 interface TagModalProps {
   open: boolean;
@@ -31,79 +26,48 @@ interface TagModalProps {
 
 export interface TagFormData {
   name: string;
-  slug: string;
   description: string;
   visibility: TagVisibility;
-  ownerType: TagOwnerType;
   categories: string[];
-  sellers: string[];
   priceMin: string;
   priceMax: string;
 }
 
 const emptyForm: TagFormData = {
   name: "",
-  slug: "",
   description: "",
-  visibility: "public",
-  ownerType: "global",
+  visibility: "service",
   categories: [],
-  sellers: [],
   priceMin: "",
   priceMax: "",
 };
 
-function toSlug(str: string): string {
-  return str
-    .toLowerCase()
-    .replace(/[а-яё]/gi, (ch) => {
-      const map: Record<string, string> = {
-        а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh",
-        з: "z", и: "i", й: "j", к: "k", л: "l", м: "m", н: "n", о: "o",
-        п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "ts",
-        ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
-      };
-      return map[ch.toLowerCase()] || ch;
-    })
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 export function TagModal({ open, onOpenChange, tag, onSave }: TagModalProps) {
   const [form, setForm] = useState<TagFormData>(emptyForm);
-  const [autoSlug, setAutoSlug] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (tag) {
       setForm({
         name: tag.name,
-        slug: tag.slug,
         description: tag.description || "",
         visibility: tag.visibility,
-        ownerType: tag.ownerType,
         categories: tag.restrictions.categories || [],
-        sellers: tag.restrictions.sellers || [],
         priceMin: tag.restrictions.priceMin?.toString() || "",
         priceMax: tag.restrictions.priceMax?.toString() || "",
       });
-      setAutoSlug(false);
     } else {
       setForm(emptyForm);
-      setAutoSlug(true);
     }
+    setExpandedCategories([]);
   }, [tag, open]);
 
   const updateField = <K extends keyof TagFormData>(key: K, value: TagFormData[K]) => {
-    setForm((prev) => {
-      const next = { ...prev, [key]: value };
-      if (key === "name" && autoSlug) {
-        next.slug = toSlug(value as string);
-      }
-      return next;
-    });
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const toggleCategory = (cat: string) => {
+    if (form.categories.length >= 10 && !form.categories.includes(cat)) return;
     setForm((prev) => ({
       ...prev,
       categories: prev.categories.includes(cat)
@@ -112,16 +76,13 @@ export function TagModal({ open, onOpenChange, tag, onSave }: TagModalProps) {
     }));
   };
 
-  const toggleSeller = (seller: string) => {
-    setForm((prev) => ({
-      ...prev,
-      sellers: prev.sellers.includes(seller)
-        ? prev.sellers.filter((s) => s !== seller)
-        : [...prev.sellers, seller],
-    }));
+  const toggleExpanded = (catName: string) => {
+    setExpandedCategories((prev) =>
+      prev.includes(catName) ? prev.filter((c) => c !== catName) : [...prev, catName]
+    );
   };
 
-  const isValid = form.name.trim() !== "" && form.slug.trim() !== "";
+  const isValid = form.name.trim() !== "";
 
   const handleSave = () => {
     if (isValid) {
@@ -153,20 +114,6 @@ export function TagModal({ open, onOpenChange, tag, onSave }: TagModalProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tag-slug">Слаг / код *</Label>
-              <Input
-                id="tag-slug"
-                value={form.slug}
-                onChange={(e) => {
-                  setAutoSlug(false);
-                  updateField("slug", e.target.value);
-                }}
-                placeholder="novinki"
-                className="font-mono text-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="tag-desc">Описание</Label>
               <Textarea
                 id="tag-desc"
@@ -180,36 +127,26 @@ export function TagModal({ open, onOpenChange, tag, onSave }: TagModalProps) {
             {/* Visibility */}
             <div className="space-y-2">
               <Label>Видимость</Label>
-              <Select
-                value={form.visibility}
-                onValueChange={(v) => updateField("visibility", v as TagVisibility)}
-              >
-                <SelectTrigger className="bg-card">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Публичный</SelectItem>
-                  <SelectItem value="service">Служебный</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Owner type */}
-            <div className="flex items-center justify-between rounded-md border p-3">
-              <div>
-                <p className="text-sm font-medium">Глобальный тег</p>
-                <p className="text-xs text-muted-foreground">
-                  {form.ownerType === "global"
-                    ? "Доступен для всех продавцов"
-                    : "Принадлежит конкретному продавцу"}
-                </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={form.visibility === "service" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => updateField("visibility", "service")}
+                >
+                  Служебный
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="opacity-50"
+                  title="Публичный тип пока недоступен"
+                >
+                  Публичный
+                </Button>
               </div>
-              <Switch
-                checked={form.ownerType === "global"}
-                onCheckedChange={(checked) =>
-                  updateField("ownerType", checked ? "global" : "seller")
-                }
-              />
             </div>
           </div>
 
@@ -217,43 +154,77 @@ export function TagModal({ open, onOpenChange, tag, onSave }: TagModalProps) {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-foreground">Ограничения</h3>
 
-            {/* Categories */}
+            {/* Categories with subcategories */}
             <div className="space-y-2">
-              <Label>Категории</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {mockCategories.map((cat) => (
-                  <Badge
-                    key={cat}
-                    variant={form.categories.includes(cat) ? "default" : "outline"}
-                    className="cursor-pointer select-none"
-                    onClick={() => toggleCategory(cat)}
-                  >
-                    {cat}
-                    {form.categories.includes(cat) && <X className="ml-1 h-3 w-3" />}
-                  </Badge>
-                ))}
+              <div className="flex items-center justify-between">
+                <Label>Категории</Label>
+                <span className="text-xs text-muted-foreground">{form.categories.length}/10</span>
               </div>
-            </div>
 
-            {/* Sellers (only for global/marketer) */}
-            {form.ownerType === "global" && (
-              <div className="space-y-2">
-                <Label>Продавцы</Label>
-                <div className="flex flex-wrap gap-1.5">
-                  {mockSellers.map((seller) => (
-                    <Badge
-                      key={seller}
-                      variant={form.sellers.includes(seller) ? "default" : "outline"}
-                      className="cursor-pointer select-none"
-                      onClick={() => toggleSeller(seller)}
-                    >
-                      {seller}
-                      {form.sellers.includes(seller) && <X className="ml-1 h-3 w-3" />}
+              {/* Selected categories */}
+              {form.categories.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {form.categories.map((cat) => (
+                    <Badge key={cat} variant="default" className="cursor-pointer select-none" onClick={() => toggleCategory(cat)}>
+                      {cat}
+                      <X className="ml-1 h-3 w-3" />
                     </Badge>
                   ))}
                 </div>
+              )}
+
+              {/* Category tree */}
+              <div className="rounded-md border max-h-[240px] overflow-y-auto">
+                {mockCategoryTree.map((cat) => {
+                  const isExpanded = expandedCategories.includes(cat.name);
+                  const isParentSelected = form.categories.includes(cat.name);
+                  const selectedSubs = cat.subcategories.filter((s) => form.categories.includes(s));
+                  
+                  return (
+                    <div key={cat.name} className="border-b last:border-0">
+                      <div className="flex items-center gap-2 px-3 py-2 hover:bg-muted/50 transition-colors">
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(cat.name)}
+                          className="shrink-0"
+                        >
+                          <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", isExpanded && "rotate-90")} />
+                        </button>
+                        <Checkbox
+                          checked={isParentSelected}
+                          onCheckedChange={() => toggleCategory(cat.name)}
+                          disabled={form.categories.length >= 10 && !isParentSelected}
+                        />
+                        <span className="text-sm flex-1 cursor-pointer" onClick={() => toggleExpanded(cat.name)}>
+                          {cat.name}
+                        </span>
+                        {selectedSubs.length > 0 && (
+                          <span className="text-xs text-muted-foreground">{selectedSubs.length} выбр.</span>
+                        )}
+                      </div>
+                      {isExpanded && (
+                        <div className="pl-10 pb-1">
+                          {cat.subcategories.map((sub) => {
+                            const fullName = sub;
+                            const isSelected = form.categories.includes(fullName);
+                            return (
+                              <div key={sub} className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted/50 transition-colors">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleCategory(fullName)}
+                                  disabled={form.categories.length >= 10 && !isSelected}
+                                />
+                                <span className="text-sm">{sub}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
             {/* Price range */}
             <div className="grid grid-cols-2 gap-3">
