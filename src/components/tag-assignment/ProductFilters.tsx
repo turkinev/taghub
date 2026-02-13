@@ -146,12 +146,13 @@ export function ProductFilters({ filters, onChange, onApply, mode }: ProductFilt
 
   const activeTags = mockTags.filter((t) => t.status === "active");
 
-  // Collect available subcategories based on selected categories
+  // All subcategories (or filtered by selected categories)
+  const allSubcategories = mockCategoryTree.flatMap((c) => c.subcategories);
   const availableSubcategories = filters.categories && filters.categories.length > 0
     ? mockCategoryTree
         .filter((c) => filters.categories.includes(c.name))
         .flatMap((c) => c.subcategories)
-    : [];
+    : allSubcategories;
 
   const handleCategoriesChange = (cats: string[]) => {
     const validSubs = cats.length > 0
@@ -225,15 +226,13 @@ export function ProductFilters({ filters, onChange, onApply, mode }: ProductFilt
           onChange={handleCategoriesChange}
         />
 
-        {/* Subcategories multi-select */}
-        {availableSubcategories.length > 0 && (
-          <MultiSelectFilter
-            label="Подкатегория"
-            options={availableSubcategories}
-            selected={filters.subcategories || []}
-            onChange={(subs) => onChange({ ...filters, subcategories: subs })}
-          />
-        )}
+        {/* Subcategories multi-select — always visible */}
+        <MultiSelectFilter
+          label="Подкатегория"
+          options={availableSubcategories}
+          selected={filters.subcategories || []}
+          onChange={(subs) => onChange({ ...filters, subcategories: subs })}
+        />
 
 
         {/* Price range */}
