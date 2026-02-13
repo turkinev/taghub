@@ -1,13 +1,8 @@
-import { useState } from "react";
-import { Tags, Minus } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Tags, Minus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { mockTags } from "@/data/mockTags";
 
 interface BulkActionsToolbarProps {
@@ -17,17 +12,71 @@ interface BulkActionsToolbarProps {
   onClearSelection: () => void;
 }
 
+function TagSearchSelect({
+  placeholder,
+  onSelect,
+  children,
+}: {
+  placeholder: string;
+  onSelect: (tagId: string) => void;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const activeTags = useMemo(() => mockTags.filter((t) => t.status === "active"), []);
+  const filtered = useMemo(
+    () =>
+      activeTags.filter((t) =>
+        search === "" || t.name.toLowerCase().includes(search.toLowerCase())
+      ),
+    [activeTags, search]
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent className="w-[220px] p-2" align="start">
+        <div className="relative mb-2">
+          <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={placeholder}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-7 h-8 text-xs"
+            autoFocus
+          />
+        </div>
+        <div className="max-h-48 overflow-y-auto space-y-0.5">
+          {filtered.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2 text-center">Ничего не найдено</p>
+          ) : (
+            filtered.map((tag) => (
+              <button
+                key={tag.id}
+                onClick={() => {
+                  onSelect(tag.id);
+                  setSearch("");
+                  setOpen(false);
+                }}
+                className="flex w-full items-center rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-accent text-left truncate"
+              >
+                {tag.name}
+              </button>
+            ))
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function BulkActionsToolbar({
   selectedCount,
   onAssignTag,
   onRemoveTag,
   onClearSelection,
 }: BulkActionsToolbarProps) {
-  const [assignTagId, setAssignTagId] = useState<string>("");
-  const [removeTagId, setRemoveTagId] = useState<string>("");
-
-  const activeTags = mockTags.filter((t) => t.status === "active");
-
   return (
     <div className="sticky bottom-0 z-30 -mx-4 lg:-mx-6">
       <div className="mx-4 lg:mx-6 mb-4 flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-lg">
@@ -43,59 +92,22 @@ export function BulkActionsToolbar({
         <div className="h-5 w-px bg-border" />
 
         {/* Assign tag */}
-        <div className="flex items-center gap-2">
-          <Select value={assignTagId} onValueChange={setAssignTagId}>
-            <SelectTrigger className="w-[160px] h-8 text-xs bg-card">
-              <SelectValue placeholder="Выберите тег" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeTags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            disabled={!assignTagId}
-            onClick={() => {
-              onAssignTag(assignTagId);
-              setAssignTagId("");
-            }}
-          >
+        <TagSearchSelect placeholder="Поиск тега..." onSelect={onAssignTag}>
+          <Button size="sm" className="h-8 gap-1.5 text-xs">
             <Tags className="h-3.5 w-3.5" />
-            Назначить
+            Назначить тег
           </Button>
-        </div>
+        </TagSearchSelect>
 
         <div className="h-5 w-px bg-border" />
 
         {/* Remove tag */}
-        <div className="flex items-center gap-2">
-          <Select value={removeTagId} onValueChange={setRemoveTagId}>
-            <SelectTrigger className="w-[160px] h-8 text-xs bg-card">
-              <SelectValue placeholder="Выберите тег" />
-            </SelectTrigger>
-            <SelectContent>
-              {activeTags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 gap-1.5 text-xs"
-            disabled={!removeTagId}
-            onClick={() => {
-              onRemoveTag(removeTagId);
-              setRemoveTagId("");
-            }}
-          >
+        <TagSearchSelect placeholder="Поиск тега..." onSelect={onRemoveTag}>
+          <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
             <Minus className="h-3.5 w-3.5" />
-            Снять
+            Снять тег
           </Button>
-        </div>
+        </TagSearchSelect>
 
         <div className="ml-auto">
           <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onClearSelection}>
