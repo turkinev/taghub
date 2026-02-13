@@ -8,6 +8,7 @@ import { mockProducts, Product, ProductTag } from "@/data/mockProducts";
 import { mockTags } from "@/data/mockTags";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type PageMode = "marketer" | "seller";
@@ -204,13 +205,27 @@ export default function TagAssignmentPage() {
                 )}
               </p>
             </div>
-            {/* Hidden mode switcher — triple-click to toggle */}
-            <button
-              className="opacity-0 w-4 h-4 cursor-default select-none"
-              aria-hidden
-              tabIndex={-1}
-              onDoubleClick={() => setMode((m) => (m === "marketer" ? "seller" : "marketer"))}
-            />
+            {/* Mode switcher */}
+            <div className="flex items-center gap-2 rounded-md border bg-muted p-1 text-xs">
+              <button
+                className={cn(
+                  "rounded px-2.5 py-1 transition-colors",
+                  mode === "marketer" ? "bg-card text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("marketer")}
+              >
+                Маркетолог
+              </button>
+              <button
+                className={cn(
+                  "rounded px-2.5 py-1 transition-colors",
+                  mode === "seller" ? "bg-card text-foreground shadow-sm font-medium" : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setMode("seller")}
+              >
+                Продавец
+              </button>
+            </div>
           </div>
         </div>
 
