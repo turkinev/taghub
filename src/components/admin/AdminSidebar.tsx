@@ -4,6 +4,7 @@ import {
   ShoppingBag,
   ChevronLeft,
   Link,
+  Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ const navItems = [
   { title: "Подборки", href: "/collections", icon: ShoppingBag },
   { title: "Теги", href: "/tags", icon: Tags },
   { title: "Назначение тегов", href: "/tag-assignment", icon: Link },
+  { title: "Посты", href: "/admin/posts", icon: Newspaper },
 ];
 
 export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
