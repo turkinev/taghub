@@ -7,6 +7,9 @@ import TagsPage from "./pages/TagsPage";
 import TagAssignmentPage from "./pages/TagAssignmentPage";
 import CollectionsPage from "./pages/CollectionsPage";
 import CollectionEditorPage from "./pages/CollectionEditorPage";
+import PostsPage from "./pages/PostsPage";
+import PostEditorPage from "./pages/PostEditorPage";
+import PostCommentsPage from "./pages/PostCommentsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,10 @@ const App = () => (
           <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/collections/new" element={<CollectionEditorPage />} />
           <Route path="/collections/:id/edit" element={<CollectionEditorPage />} />
+          <Route path="/admin/posts" element={<PostsPage />} />
+          <Route path="/admin/posts/new" element={<PostEditorPage />} />
+          <Route path="/admin/posts/:id/edit" element={<PostEditorPage />} />
+          <Route path="/admin/posts/:id/comments" element={<PostCommentsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
